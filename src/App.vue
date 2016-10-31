@@ -10,41 +10,48 @@
       <div v-else class="popUpName">
         <input v-model="myAvatar.name" type="text" placeholder="Guest">
         <button class="button play" @click="letPlay">play</button>
+        <br>
+        <br>
+        <h5 style="font-family: sans-serif; color: #CCCCCC; font-size: 2em;">
+          Score < 0 , Consumed , Nood is Die
+        </h5>
       </div>
     </div>
     <div v-show="!checkName" class="popUpName">
-      <h4 style="font-family: sans-serif;">
-        Please waiting {{waitingTime}} second.
+      <h4 style="font-family: sans-serif; color: #00CC00; font-size: 2em;">
+        Ready in {{waitingTime}}
       </h4>
     </div>
   </div>
   <div @mousemove="mousePosition()">
     <div class="screen" @mouseover="move(time)" @mouseout="outOfArea">
 
-      <div class="avatar" :style="{'top': avatar.y-myAvatar.y+(winHeight/2)-25 + 'px', 'left': avatar.x-myAvatar.x+(winWidth/2)-25 + 'px'}" v-for="avatar in avatars">
-        <img v-if="myAvatar.id === avatar.id" src="../static/img/gird-bg.png" :style="{'position':'absolute', 'top': -avatar.y + 'px', 'left': -avatar.x + 'px'}"/>
-        <div>
+      <div class="avatar" :style="{'top': avatar.y-myAvatar.y+(halfHeight)-(halfHeight*0.05) + 'px', 'left': avatar.x-myAvatar.x+halfWidth-(halfWidth*0.1) + 'px'}" v-for="avatar in avatars">
+        <div style="text-align: center; z-index: 100;">
+          <a style="font-family: Lucida Console; font-weight: bolder; color: #00CC00; font-size: 1.5em;">
+            {{avatar.name}}
+          </a>
+          <br>
+            <img :src="'../static/img/' + avatar.body + '.png'" width="70%"/>
+            <br>
+            <img :src="'../static/img/LEG' + avatar.leg1 + '.png'" width="10%"/>
+            <img :src="'../static/img/LEG' + avatar.leg2 + '.png'" width="10%"/>
+        </div>
+        <img v-if="myAvatar.id === avatar.id" src="../static/img/gird-bg.png" :style="{'position':'absolute', 'top': -avatar.y+(halfHeight*0.2) + 'px', 'left': -avatar.x+(halfWidth*0.2) + 'px'}"/>
+        <div style="position: absolute;">
           <!-- <img src="../static/img/king.png" width="65" height="65" style="position: absolute; z-index: 999; top:5px; left:-1px;"/>
           -->
-          <div style="text-align: center; position: absolute; z-index: 99;">
-            <a>
-              {{avatar.name}}
-            </a>
-            <img :src="'../static/img/' + avatar.body + '.png'" width="60" height="60"/>
-            <img :src="'../static/img/LEG' + avatar.leg1 + '.png'" width="10" height="10"/>
-            <img :src="'../static/img/LEG' + avatar.leg2 + '.png'" height="10"/>
-          </div>
         </div>
       </div>
 
       <div v-show="!wait">
-        <h3 class="score">
+        <h3 style="font-size: 2em;">
           Score {{myAvatar.score}}
         </h3>
       </div>
 
-      <div class="foods" :style="{'top': food.y-myAvatar.y+(winHeight/2)-5 + 'px', 'left': food.x-myAvatar.x+(winWidth/2)-5 + 'px'}" v-for="food in foods">
-        <img :src="'../static/img/RICE0.png'" style="position: absolute; z-index: 99;" />
+      <div class="foods" :style="{'top': food.y-myAvatar.y+halfHeight + 'px', 'left': food.x-myAvatar.x+halfWidth + 'px'}" v-for="food in foods">
+        <img :src="'../static/img/RICE0.png'" style="position: absolute; z-index: 99;" width="100%"/>
         <!-- <img v-if="myAvatar.id === avatar.id" src="../static/img/gird-bg.png" :style="{'position':'absolute', 'top': -myAvatar.y+25+(winHeight/2)-50 + 'px', 'left': -myAvatar.x+25+(winWidth/2)-50 + 'px'}" v-for="avatar in avatars"/>
         Ο -->
       </div>
@@ -90,8 +97,8 @@ export default {
       }
     })
     key = 'child_moved'
-    let x = Math.floor(Math.random() * 2950) + 25
-    let y = Math.floor(Math.random() * 2838)
+    let x = Math.floor(Math.random() * 2750)
+    let y = Math.floor(Math.random() * 2788)
     let avatar = {
       x,
       y
@@ -125,6 +132,9 @@ export default {
         vm.myAvatar.speed = snapshot.val().speed
         vm.myAvatar.eat = snapshot.val().eat
         vm.myAvatar.score = snapshot.val().score
+        if (vm.myAvatar.score === undefined) {
+          vm.myAvatar.id = ''
+        }
       }
     })
     Avatars.on('child_removed', function (snapshot) {
@@ -133,8 +143,11 @@ export default {
       // vm.checkName = true ***`แก้ซะ`
       var checkDie = vm.avatars.find(avatar => avatar.id === myId)
       if (checkDie === undefined) {
+        // vm.checkName = true // *****************
         vm.checkName = true
         vm.wait = true
+        vm.waitingTime = 3
+        clearInterval(vm.active)
       }
     })
     vm.foodsGen()
@@ -160,7 +173,7 @@ export default {
     // 25 75
     // 2950
     // 2838
-    let body = Math.floor(Math.random() * 3) + 1
+    // let body = Math.floor(Math.random() * 3) + 1
     let winHeight = window.innerHeight
     let winWidth = window.innerWidth
 
@@ -168,11 +181,13 @@ export default {
       checkFull: false,
       winHeight,
       winWidth,
+      halfHeight: winHeight / 2,
+      halfWidth: winWidth / 2,
       mouseX: 0,
       mouseY: 0,
       avatars: [],
       foods: [],
-      time: 10,
+      time: 20,
       checkName: true,
       active: false,
       waitingTime: 3,
@@ -182,10 +197,10 @@ export default {
         // color: `${chickColor}`, // color: `rgb(${r}, ${g}, ${b})`,
         x: 0,
         y: 0,
-        body: body + '-7',
-        color: body,
-        leg1: '1',
-        leg2: '1',
+        body: '',
+        color: '',
+        leg1: '',
+        leg2: '',
         speed: false,
         eat: false,
         king: false,
@@ -206,9 +221,8 @@ export default {
         vm.winHeight = window.innerHeight
         vm.winWidth = window.innerWidth
       }, 10)
-
-      vm.myAvatar.x = Math.floor(Math.random() * 2950) + 25
-      vm.myAvatar.y = Math.floor(Math.random() * 2838)
+      vm.myAvatar.x = Math.floor(Math.random() * 2850)
+      vm.myAvatar.y = Math.floor(Math.random() * 2888)
       firebase.database().ref('avatars/' + myId).remove()
       vm.addAvatar(vm.myAvatar)
     },
@@ -232,7 +246,6 @@ export default {
         }
         i++
       }, 1000)
-      vm.waitingTime = 3
     },
     upKey (e) {
       // @keydown.z="upSpeed"
@@ -257,6 +270,18 @@ export default {
       }
     },
     addAvatar (newAvatar) {
+      let vm = this
+      let body = Math.floor(Math.random() * 3) + 1
+      vm.myAvatar.x = Math.floor(Math.random() * 2950) + 25
+      vm.myAvatar.y = Math.floor(Math.random() * 2838)
+      vm.myAvatar.body = body + '-7'
+      vm.myAvatar.color = body
+      vm.myAvatar.leg1 = '1'
+      vm.myAvatar.leg2 = '1'
+      vm.myAvatar.speed = false
+      vm.myAvatar.eat = false
+      vm.myAvatar.king = false
+      vm.myAvatar.score = 0
       let result = Avatars.push(newAvatar)
       this.myAvatar.id = result.key
       myId = this.myAvatar.id
@@ -288,8 +313,8 @@ export default {
           y1 = vm.mouseY
           dx = Math.abs(x1 - xCenter)
           dy = Math.abs(y1 - yCenter)
-          checkX = (xCenter < x1) ? 1.5 : -1.5
-          checkY = (yCenter < y1) ? 1.5 : -1.5
+          checkX = (xCenter < x1) ? 5 : -5
+          checkY = (yCenter < y1) ? 5 : -5
           err = dx - dy
           e2 = 2 * err
           i = 0
@@ -299,7 +324,7 @@ export default {
           vm.wait = true
         }
         if (!(((xCenter + 25 > x1) && (xCenter - 25 < x1)) && ((yCenter - 25 < y1) && (yCenter + 25 > y1)))) {
-          if (vm.active) {
+          if (vm.active && vm.myAvatar.id !== '') {
             firebase.database().ref('avatars/' + vm.myAvatar.id).update({
               y: yOrigin,
               x: xOrigin
@@ -315,17 +340,17 @@ export default {
             yOrigin += checkY
           }
           // check out of area
-          if (yOrigin < -25 && y1 < yCenter) {
-            yOrigin = -25
+          if (yOrigin < 100 && y1 < yCenter) {
+            yOrigin = 100
           }
-          if (xOrigin < 0 && x1 < xCenter) {
-            xOrigin = 0
+          if (xOrigin < 75 && x1 < xCenter) {
+            xOrigin = 75
           }
-          if (yOrigin > 2888 && y1 > yCenter) {
-            yOrigin = 2888
+          if (yOrigin > 2975 && y1 > yCenter) {
+            yOrigin = 2975
           }
-          if (xOrigin > 2950 && x1 > xCenter) {
-            xOrigin = 2950
+          if (xOrigin > 3025 && x1 > xCenter) {
+            xOrigin = 3025
           }
           vm.actionLeg()
         }
@@ -364,6 +389,22 @@ export default {
         firebase.database().ref('avatars/' + vm.myAvatar.id).update({
           score: vm.myAvatar.score
         })
+      }
+      if (vm.myAvatar.score < 0) {
+        clearInterval(vm.active)
+        var count = 0
+        var feather = setInterval(function () {
+          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
+            body: vm.myAvatar.color + 'Feather',
+            leg1: 'undefined',
+            leg2: 'undefined'
+          })
+          count++
+          if (count === 100) {
+            firebase.database().ref('avatars/' + myId).remove()
+            clearInterval(feather)
+          }
+        }, 0)
       }
     },
     outOfArea () {
@@ -461,7 +502,7 @@ export default {
     },
     upSpeed () {
       if (!this.myAvatar.speed) {
-        this.time = 0
+        this.time = 10
         clearInterval(this.active)
         this.move(this.time)
         firebase.database().ref('avatars/' + this.myAvatar.id).update({
@@ -470,7 +511,7 @@ export default {
       }
     },
     normalSpeed () {
-      this.time = 10
+      this.time = 20
       clearInterval(this.active)
       this.move(this.time)
       firebase.database().ref('avatars/' + this.myAvatar.id).update({
@@ -510,7 +551,7 @@ export default {
           vm.addfood(newfood)
           length = vm.foods.length
         }
-      }, 50000)
+      }, 1000 * 60 * 5)
     },
     addfood (newfood) {
       Foods.push(newfood)
@@ -539,8 +580,8 @@ div#outOfArea {
 }
 div.avatar {
   position: absolute;
-  width: 50px;
-  height: 50px;
+  width: 10%;
+  height: 10%;
 }
 div.foods {
   position: absolute;
