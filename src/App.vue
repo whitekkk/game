@@ -3,7 +3,7 @@
     <div class="bgUpName"></div>
     <div v-show="checkName">
       <div v-if = "checkFull" class="popUpName">
-        <h4>
+        <h4 style="color: #EE0000; font-size: 2em;">
           Server is Full !!
         </h4>
       </div>
@@ -12,13 +12,27 @@
         <button class="button play" @click="letPlay">play</button>
         <br>
         <br>
-        <h5 style="font-family: sans-serif; color: #CCCCCC; font-size: 2em;">
+        <div class="chick" :style="{'background': color}" style="margin: 0 auto; display: inline-block;">
+          <img :src="'../static/img/' + f + '.png'" width="100%"/>
+        </div>
+        &nbsp;
+        <div style="margin: 0 auto; display: inline-block;">
+          <button @click="selectFace(-1)" class="button play"><</button>
+          Face : {{ f }}
+          <button @click="selectFace(1)" class="button play">></button>
+          <br>
+          <button @click="selectColor(-1)" class="button play"><</button>
+          Color : {{ c }}
+          <button @click="selectColor(1)" class="button play">></button>
+        </div>
+        <h5 style="color: #CCCCCC; font-size: 2em;">
+          <br><br>
           Score < 0 , Consumed , Nood is Die
         </h5>
       </div>
     </div>
     <div v-show="!checkName" class="popUpName">
-      <h4 style="font-family: sans-serif; color: #00CC00; font-size: 2em;">
+      <h4 style="color: #00CC00; font-size: 2em;">
         Ready in {{waitingTime}}
       </h4>
     </div>
@@ -26,34 +40,47 @@
   <div @mousemove="mousePosition()">
     <div class="screen" @mouseover="move(time)" @mouseout="outOfArea">
 
-      <div class="avatar" :style="{'top': avatar.y-myAvatar.y+(halfHeight)-(halfHeight*0.05) + 'px', 'left': avatar.x-myAvatar.x+halfWidth-(halfWidth*0.1) + 'px'}" v-for="avatar in avatars">
-        <div style="text-align: center; z-index: 100;">
+      <div class="avatar" :style="{'top': avatar.y-myAvatar.y+(halfHeight)-50 + 'px', 'left': avatar.x-myAvatar.x+halfWidth + 'px'}" v-for="avatar in avatars">
+        <img v-if="myAvatar.id === avatar.id" src="../static/img/gird-bg.png" :style="{'position':'absolute', 'top': -avatar.y + 'px', 'left': -avatar.x + 'px'}"/>
+        <div style="text-align: center; z-index: 100; position: absolute;">
           <a style="font-family: Lucida Console; font-weight: bolder; color: #00CC00; font-size: 1.5em;">
             {{avatar.name}}
           </a>
           <br>
-            <img :src="'../static/img/' + avatar.body + '.png'" width="70%"/>
-            <br>
-            <img :src="'../static/img/LEG' + avatar.leg1 + '.png'" width="10%"/>
+          <div class="chick" :style="{'background': avatar.color}">
+            <img :src="'../static/img/' + avatar.face + '.png'" width="100%"/>
+          </div>
             <img :src="'../static/img/LEG' + avatar.leg2 + '.png'" width="10%"/>
-        </div>
-        <img v-if="myAvatar.id === avatar.id" src="../static/img/gird-bg.png" :style="{'position':'absolute', 'top': -avatar.y+(halfHeight*0.2) + 'px', 'left': -avatar.x+(halfWidth*0.2) + 'px'}"/>
-        <div style="position: absolute;">
-          <!-- <img src="../static/img/king.png" width="65" height="65" style="position: absolute; z-index: 999; top:5px; left:-1px;"/>
-          -->
         </div>
       </div>
 
+      <div class="rankingBoard">
+        <h4>&nbsp;&nbsp;
+        Ranking <img src="../static/img/crown.png"/>
+        </h4>
+        <div class="ranking" v-for="avatar in avatars | orderBy 'score' -1">
+          <h6 v-if="avatar.score !== undefined">
+            <div style="display: inline-block;">
+              {{' '}}
+            </div>
+            <div style="display: inline-block;">
+              &nbsp;
+              {{avatar.name + ' '}}
+            </div>
+            <div style="position: absolute; right:0; display: inline-block;">
+              {{avatar.score}}
+            </div>
+          </h6>
+        </div>
+      </div>
       <div v-show="!wait">
-        <h3 style="font-size: 2em;">
+        <h3 style="font-size: 2em; position: absolute; right:0; bottom: 0;">
           Score {{myAvatar.score}}
         </h3>
       </div>
 
       <div class="foods" :style="{'top': food.y-myAvatar.y+halfHeight + 'px', 'left': food.x-myAvatar.x+halfWidth + 'px'}" v-for="food in foods">
-        <img :src="'../static/img/RICE0.png'" style="position: absolute; z-index: 99;" width="100%"/>
-        <!-- <img v-if="myAvatar.id === avatar.id" src="../static/img/gird-bg.png" :style="{'position':'absolute', 'top': -myAvatar.y+25+(winHeight/2)-50 + 'px', 'left': -myAvatar.x+25+(winWidth/2)-50 + 'px'}" v-for="avatar in avatars"/>
-        Ο -->
+        <img :src="'../static/img/RICE'+ food.color +'.png'" style="position: absolute; z-index: 99;" width="100%"/>
       </div>
 
     </div>
@@ -97,15 +124,15 @@ export default {
       }
     })
     key = 'child_moved'
-    let x = Math.floor(Math.random() * 2750)
-    let y = Math.floor(Math.random() * 2788)
+    let x = Math.floor(Math.random() * 2750) + 50
+    let y = Math.floor(Math.random() * 2788) + 50
     let avatar = {
       x,
       y
     }
     let result = Avatars.push(avatar)
     myId = result.key
-
+    // *warning
     Avatars.on('child_added', function (snapshot) {
       var item = snapshot.val()
       item.id = snapshot.key
@@ -116,9 +143,7 @@ export default {
       var avatar = vm.avatars.find(avatar => avatar.id === id)
       avatar.x = snapshot.val().x
       avatar.y = snapshot.val().y
-      avatar.body = snapshot.val().body
-      avatar.leg1 = snapshot.val().leg1
-      avatar.leg2 = snapshot.val().leg2
+      avatar.face = snapshot.val().face
       avatar.speed = snapshot.val().speed
       avatar.eat = snapshot.val().eat
       avatar.score = snapshot.val().score
@@ -126,9 +151,7 @@ export default {
       if (vm.myAvatar.id === id) {
         vm.myAvatar.x = snapshot.val().x
         vm.myAvatar.y = snapshot.val().y
-        vm.myAvatar.body = snapshot.val().body
-        vm.myAvatar.leg1 = snapshot.val().leg1
-        vm.myAvatar.leg2 = snapshot.val().leg2
+        vm.myAvatar.face = snapshot.val().face
         vm.myAvatar.speed = snapshot.val().speed
         vm.myAvatar.eat = snapshot.val().eat
         vm.myAvatar.score = snapshot.val().score
@@ -162,20 +185,18 @@ export default {
     })
   },
   data () {
-    // let r = Math.floor(Math.random() * 255)
-    // let g = Math.floor(Math.random() * 255)
-    // let b = Math.floor(Math.random() * 255)
-    // camera = 1024*768 or 800*600
-    // bg = 3000 × 2988
-    // coner = 25 × 0
-    // 25
-    // coner = 2975 × 2913
-    // 25 75
-    // 2950
-    // 2838
-    // let body = Math.floor(Math.random() * 3) + 1
     let winHeight = window.innerHeight
     let winWidth = window.innerWidth
+    let c = Math.floor(Math.random() * 3) + 1
+    let f = Math.floor(Math.random() * 3) + 1
+    let color = ''
+    if (c === 1) {
+      color = '#F5FF5D'
+    } else if (c === 2) {
+      color = '#AEFBE9'
+    } else {
+      color = '#FC665A'
+    }
 
     return {
       checkFull: false,
@@ -192,15 +213,17 @@ export default {
       active: false,
       waitingTime: 3,
       wait: true,
+      color,
+      face: '',
+      f,
+      c: 1,
       myAvatar: {
         name: '',
         // color: `${chickColor}`, // color: `rgb(${r}, ${g}, ${b})`,
         x: 0,
         y: 0,
-        body: '',
-        color: '',
-        leg1: '',
-        leg2: '',
+        face: '',
+        color,
         speed: false,
         eat: false,
         king: false,
@@ -215,29 +238,46 @@ export default {
 
   // methods
   methods: {
+    selectFace (num) {
+      this.f = this.f + num
+      if (this.f > 3) {
+        this.f = 1
+      } else if (this.f <= 0) {
+        this.f = 3
+      }
+    },
+    selectColor (num) {
+      this.c = this.c + num
+      if (this.c > 3) {
+        this.c = 1
+      } else if (this.c <= 0) {
+        this.c = 3
+      }
+      if (this.c === 1) {
+        this.color = '#F5FF5D'
+      } else if (this.c === 2) {
+        this.color = '#AEFBE9'
+      } else {
+        this.color = '#FC665A'
+      }
+    },
     gameStart () {
       let vm = this
       setInterval(function () {
         vm.winHeight = window.innerHeight
         vm.winWidth = window.innerWidth
+        vm.halfHeight = vm.winHeight / 2
+        vm.halfWidth = vm.winWidth / 2
       }, 10)
-      vm.myAvatar.x = Math.floor(Math.random() * 2850)
-      vm.myAvatar.y = Math.floor(Math.random() * 2888)
+      // *** ranks
       firebase.database().ref('avatars/' + myId).remove()
       vm.addAvatar(vm.myAvatar)
     },
     letPlay () {
       let vm = this
       vm.checkName = false
-      // this.$socket.emit('my other event', { my: 'data' })
-      // vm.$socket.emit('put name', { my: vm.myAvatar.name })
-      // vm.$socket.on('news', function (data) {
-      //   console.log(data)
-      //   console.log(1)
-      // })
       let i = 0
       let waiting = setInterval(function () {
-        // console.log(i)
         vm.waitingTime--
         if (i === 2) {
           vm.gameStart()
@@ -248,10 +288,6 @@ export default {
       }, 1000)
     },
     upKey (e) {
-      // @keydown.z="upSpeed"
-      // @keyup.z="normalSpeed"
-      // @keydown.x="eat"
-      // @keyup.x="shutup"
       if (e.key === 'z') {
         this.normalSpeed()
       }
@@ -271,13 +307,12 @@ export default {
     },
     addAvatar (newAvatar) {
       let vm = this
-      let body = Math.floor(Math.random() * 3) + 1
-      vm.myAvatar.x = Math.floor(Math.random() * 2950) + 25
-      vm.myAvatar.y = Math.floor(Math.random() * 2838)
-      vm.myAvatar.body = body + '-7'
-      vm.myAvatar.color = body
-      vm.myAvatar.leg1 = '1'
-      vm.myAvatar.leg2 = '1'
+      let color = vm.color
+      let face = vm.f
+      vm.myAvatar.x = Math.floor(Math.random() * 2750) + 50
+      vm.myAvatar.y = Math.floor(Math.random() * 2788) + 50
+      vm.myAvatar.face = face
+      vm.myAvatar.color = color
       vm.myAvatar.speed = false
       vm.myAvatar.eat = false
       vm.myAvatar.king = false
@@ -300,15 +335,11 @@ export default {
       var checkX = 1
       var checkY = 1
       var err = 0
-      let i = 0
+      let i = 1
       var e2 = 0
-      // var checkArea = (((xOrigin < 0 || yOrigin < 0) && (x1 < xCenter || y1 < yCenter)) || ((xOrigin > 3000 || yOrigin > 2988) && (x1 > xCenter || y1 > yCenter)))
-      // var checkCenter = ((xCenter + 25 > x1) && (xCenter - 25 < x1)) && ((yCenter - 25 < y1) && (yCenter + 25 > y1))
+
       vm.active = setInterval(function () {
-        // if (vm.checkName != true) {
         if (i === 10) {
-          xOrigin = vm.myAvatar.x
-          yOrigin = vm.myAvatar.y
           x1 = vm.mouseX
           y1 = vm.mouseY
           dx = Math.abs(x1 - xCenter)
@@ -340,19 +371,18 @@ export default {
             yOrigin += checkY
           }
           // check out of area
-          if (yOrigin < 100 && y1 < yCenter) {
-            yOrigin = 100
+          if (yOrigin < -20 && y1 < yCenter) {
+            yOrigin = -20
           }
-          if (xOrigin < 75 && x1 < xCenter) {
-            xOrigin = 75
+          if (xOrigin < 0 && x1 < xCenter) {
+            xOrigin = 0
           }
-          if (yOrigin > 2975 && y1 > yCenter) {
-            yOrigin = 2975
+          if (yOrigin > 2845 && y1 > yCenter) {
+            yOrigin = 2845
           }
-          if (xOrigin > 3025 && x1 > xCenter) {
-            xOrigin = 3025
+          if (xOrigin > 2898 && x1 > xCenter) {
+            xOrigin = 2898
           }
-          vm.actionLeg()
         }
       }, time)
     },
@@ -361,7 +391,6 @@ export default {
       var eatFood = 0
       var index = 0
       var check = 0
-      // vm.avatars.findIndex(avatar => (avatar.x === vm.myAvatar.x && avatar.y === vm.myAvatar.y))
       eatFood = vm.foods.find(food => {
         index++
         check = ((food.x < vm.myAvatar.x + 25) && (food.x > vm.myAvatar.x - 25)) && ((food.y < vm.myAvatar.y + 25) && (food.y > vm.myAvatar.y - 25))
@@ -392,23 +421,10 @@ export default {
       }
       if (vm.myAvatar.score < 0) {
         clearInterval(vm.active)
-        var count = 0
-        var feather = setInterval(function () {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: vm.myAvatar.color + 'Feather',
-            leg1: 'undefined',
-            leg2: 'undefined'
-          })
-          count++
-          if (count === 100) {
-            firebase.database().ref('avatars/' + myId).remove()
-            clearInterval(feather)
-          }
-        }, 0)
+        firebase.database().ref('avatars/' + myId).remove()
       }
     },
     outOfArea () {
-      // console.log('out of area')
       let vm = this
       clearInterval(vm.active)
     },
@@ -417,86 +433,13 @@ export default {
       let position = window.event
       vm.mouseX = position.clientX
       vm.mouseY = position.clientY
-      let body = vm.myAvatar.color.toString()
-      let slope = (vm.winHeight / 2 - vm.mouseY) / (vm.winWidth / 2 - vm.mouseX)
-      vm.actionChick(vm, body, slope)
+      let face = vm.myAvatar.color.toString()
+      vm.actionChick(vm, face)
     },
-    actionChick (vm, body, slope) {
-      // console.log(slope)
-      if (vm.mouseX > vm.winWidth / 2 && vm.mouseY > vm.winHeight / 2) { // q 4
-        if (slope < 0.25) {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-1'
-          })
-        } else if (slope < 0.75) {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-8'
-          })
-        } else {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-7'
-          })
-        }
-      } else if (vm.mouseX > vm.winWidth / 2 && vm.mouseY < vm.winHeight / 2) { // q1
-        if (slope < -0.75) {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-3'
-          })
-        } else if (slope < -0.25) {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-2'
-          })
-        } else {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-1'
-          })
-        }
-      } else if (vm.mouseX < vm.winWidth / 2 && vm.mouseY < vm.winHeight / 2) { // q2
-        if (slope < 0.25) {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-5'
-          })
-        } else if (slope < 0.75) {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-4'
-          })
-        } else {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-3'
-          })
-        }
-      } else if (vm.mouseX < vm.winWidth / 2 && vm.mouseY > vm.winHeight / 2) { // q3
-        if (slope > -0.25) {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-5'
-          })
-        } else if (slope > -0.75) {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-6'
-          })
-        } else {
-          firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-            body: body + '-7'
-          })
-        }
-      }
-      if (vm.myAvatar.eat) {
+    actionChick (vm, face) {
+      if (vm.myAvatar.eat && vm.myAvatar.face !== vm.f + '-0') {
         firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-          body: this.myAvatar.body + '-0'
-        })
-      }
-    },
-    actionLeg () {
-      let vm = this
-      if (vm.myAvatar.x % 24 === 0 || vm.myAvatar.y % 24 === 0) {
-        firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-          leg1: '1',
-          leg2: '3'
-        })
-      } else if (vm.myAvatar.x % 11 === 0 || vm.myAvatar.y % 11 === 0) {
-        firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-          leg1: '2',
-          leg2: '1'
+          face: vm.myAvatar.face + '-0'
         })
       }
     },
@@ -519,7 +462,8 @@ export default {
       })
     },
     eat () {
-      if (this.myAvatar.body.search('-0') === -1 && !this.myAvatar.eat) {
+      this.myAvatar.face = this.myAvatar.face.toString()
+      if (this.myAvatar.face.search('-0') === -1 && !this.myAvatar.eat) {
         firebase.database().ref('avatars/' + this.myAvatar.id).update({
           eat: true
         })
@@ -528,7 +472,7 @@ export default {
     },
     shutup () {
       firebase.database().ref('avatars/' + this.myAvatar.id).update({
-        body: this.myAvatar.body.replace('-0', ''),
+        face: this.myAvatar.face.replace('-0', ''),
         eat: false
       })
     },
@@ -538,15 +482,17 @@ export default {
       var length = 0
 
       newfood = {
-        x: Math.floor(Math.random() * 2950),
-        y: Math.floor(Math.random() * 2838)
+        color: Math.floor(Math.random() * 3) + 1,
+        x: Math.floor(Math.random() * 2900) + 50,
+        y: Math.floor(Math.random() * 2778) + 50
       }
       vm.addfood(newfood)
       setInterval(function () {
         if (length < 10) {
           newfood = {
-            x: Math.floor(Math.random() * 2950),
-            y: Math.floor(Math.random() * 2838)
+            color: Math.floor(Math.random() * 3) + 1,
+            x: Math.floor(Math.random() * 2900) + 50,
+            y: Math.floor(Math.random() * 2778) + 50
           }
           vm.addfood(newfood)
           length = vm.foods.length
@@ -559,100 +505,4 @@ export default {
   }
 }
 </script>
-
-<style>
-html {
-  overflow:hidden;
-  zoom: reset;
-}
-div.screen {
-  position: relative;
-  width: 101vw;
-  height: 101vh;
-  top: -10px;
-  left: -10px;
-  overflow:hidden;
-  border-color: #FFFFFF;
-}
-div#outOfArea {
-  width: 100vw;
-  height: 100vh;
-}
-div.avatar {
-  position: absolute;
-  width: 10%;
-  height: 10%;
-}
-div.foods {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-}
-div.popUpName {
-  position: fixed;
-  z-index: 9999;
-  background-color: white;
-  top: 50%;
-  left: 50%;
-  width: 400px;
-  height: 50px;
-  margin-top: -100px;
-  margin-left: -200px;
-  align-items: center;
-  text-align: center;
-  padding: 60px 0;
-  border: 3px solid #977797;
-  text-align: center;
-  border-radius: 8px;
-}
-div.bgUpName {
-  position: fixed;
-  opacity:0.4;
-  filter:alpha(opacity=40); /* For IE8 and earlier */
-  background-color:#000000;
-  background-size:100%;
-  width: 105%;
-  height: 105%;
-  z-index: 9998;
-  top: -5px;
-  left: -5px;
-}
-button.button {
-  background-color: #4CAF50; /* Green */
-  border: none;
-  color: white;
-  padding: 8px 16px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  -webkit-transition-duration: 0.4s; /* Safari */
-  transition-duration: 0.4s;
-  cursor: pointer;
-  border-radius: 8px;
-}
-button.play {
-  background-color: white;
-  color: black;
-  border: 2px solid #979797;
-}
-button.play:hover {
-  background-color: #979797;
-  color: white;
-}
-input[type=text], select {
-  padding: 8px 16px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-div,score {
-  position: absolute;
-  font-family: sans-serif;
-  bottom: 0;
-  right: 0;
-}
-</style>
+<style src="../static/css/game.css"> </style>
