@@ -1,6 +1,9 @@
 <template>
   <div v-show="wait">
     <div class="bgUpName"></div>
+    <div class="logo">
+      <img src="../static/img/6.gif"/>
+    </div>
     <div v-show="checkName">
       <div v-if = "checkFull" class="popUpName">
         <h4 style="color: #EE0000; font-size: 2em;">
@@ -37,52 +40,58 @@
       </h4>
     </div>
   </div>
-  <div @mousemove="mousePosition()">
-    <div class="screen" @mouseover="move(time)" @mouseout="outOfArea">
+  <div v-show="!wait">
+    <div @mousemove="mousePosition()">
+      <div class="screen" @mouseover="move(time)" @mouseout="outOfArea">
 
-      <div class="avatar" :style="{'top': avatar.y-myAvatar.y+(halfHeight)-50 + 'px', 'left': avatar.x-myAvatar.x+halfWidth + 'px'}" v-for="avatar in avatars">
-        <img v-if="myAvatar.id === avatar.id" src="../static/img/gird-bg.png" :style="{'position':'absolute', 'top': -avatar.y + 'px', 'left': -avatar.x + 'px'}"/>
-        <div style="text-align: center; z-index: 100; position: absolute;">
-          <a style="font-family: Lucida Console; font-weight: bolder; color: #00CC00; font-size: 1.5em;">
-            {{avatar.name}}
-          </a>
-          <br>
-          <div class="chick" :style="{'background': avatar.color}">
-            <img :src="'../static/img/' + avatar.face + '.png'" width="100%"/>
+        <div class="avatar" :style="{'top': avatar.y-myAvatar.y+(halfHeight)-75 + 'px', 'left': avatar.x-myAvatar.x+halfWidth-50 + 'px'}" v-for="avatar in avatars">
+          <img v-if="myAvatar.id === avatar.id" src="../static/img/gird-bg.png" :style="{'position':'absolute', 'top': -avatar.y + 'px', 'left': -avatar.x + 'px'}"/>
+          <div style="text-align: center; z-index: 100; position: absolute;">
+            <a style="font-family: Lucida Console; font-weight: bolder; color: #00CC00; font-size: 1.5em;">
+              {{avatar.name}}
+            </a>
+            <br>
+            <div class="chick" :style="{'background': avatar.color}">
+              <img :src="'../static/img/' + avatar.face + '.png'" width="100%"/>
+            </div>
           </div>
-            <img :src="'../static/img/LEG' + avatar.leg2 + '.png'" width="10%"/>
         </div>
-      </div>
 
-      <div class="rankingBoard">
-        <h4>&nbsp;&nbsp;
-        Ranking <img src="../static/img/crown.png"/>
-        </h4>
-        <div class="ranking" v-for="avatar in avatars | orderBy 'score' -1">
-          <h6 v-if="avatar.score !== undefined">
-            <div style="display: inline-block;">
-              {{' '}}
-            </div>
-            <div style="display: inline-block;">
-              &nbsp;
-              {{avatar.name + ' '}}
-            </div>
-            <div style="position: absolute; right:0; display: inline-block;">
-              {{avatar.score}}
-            </div>
-          </h6>
+        <div class="rankingBoard">
+          <h4>&nbsp;&nbsp;
+          Ranking <img src="../static/img/crown.png"/>
+          </h4>
+          <div class="ranking" v-for="avatar in avatars | orderBy 'score' -1">
+            <h6 v-if="avatar.score !== undefined">
+              <div style="display: inline-block;">
+                {{' '}}
+              </div>
+              <div style="display: inline-block;">
+                &nbsp;
+                {{avatar.name + ' '}}
+              </div>
+              <div style="position: absolute; right:0; display: inline-block;">
+                {{avatar.score}}
+              </div>
+            </h6>
+          </div>
         </div>
-      </div>
-      <div v-show="!wait">
-        <h3 style="font-size: 2em; position: absolute; right:0; bottom: 0;">
-          Score {{myAvatar.score}}
-        </h3>
-      </div>
 
-      <div class="foods" :style="{'top': food.y-myAvatar.y+halfHeight + 'px', 'left': food.x-myAvatar.x+halfWidth + 'px'}" v-for="food in foods">
-        <img :src="'../static/img/RICE'+ food.color +'.png'" style="position: absolute; z-index: 99;" width="100%"/>
-      </div>
+          <h5 style="position: absolute; right:125px; bottom: 4%;">
+            Target
+            <div class="target" :style="{'background': target}">
+            </div>
+          </h5>
 
+          <h3 style="font-size: 2em; position: absolute; right:0; bottom: 0;">
+            Score {{myAvatar.score}}
+          </h3>
+
+        <div class="foods" :style="{'top': food.y-myAvatar.y+halfHeight + 'px', 'left': food.x-myAvatar.x+halfWidth + 'px'}" v-for="food in foods">
+          <img :src="'../static/img/RICE'+ food.pic +'.png'" style="position: absolute; z-index: 99;" width="100%"/>
+        </div>
+
+      </div>
     </div>
   </div>
 </template>
@@ -143,6 +152,7 @@ export default {
       var avatar = vm.avatars.find(avatar => avatar.id === id)
       avatar.x = snapshot.val().x
       avatar.y = snapshot.val().y
+      avatar.color = snapshot.val().color
       avatar.face = snapshot.val().face
       avatar.speed = snapshot.val().speed
       avatar.eat = snapshot.val().eat
@@ -151,6 +161,7 @@ export default {
       if (vm.myAvatar.id === id) {
         vm.myAvatar.x = snapshot.val().x
         vm.myAvatar.y = snapshot.val().y
+        vm.myAvatar.color = snapshot.val().color
         vm.myAvatar.face = snapshot.val().face
         vm.myAvatar.speed = snapshot.val().speed
         vm.myAvatar.eat = snapshot.val().eat
@@ -199,6 +210,7 @@ export default {
     }
 
     return {
+      target: '',
       checkFull: false,
       winHeight,
       winWidth,
@@ -216,7 +228,7 @@ export default {
       color,
       face: '',
       f,
-      c: 1,
+      c,
       myAvatar: {
         name: '',
         // color: `${chickColor}`, // color: `rgb(${r}, ${g}, ${b})`,
@@ -268,7 +280,7 @@ export default {
         vm.winWidth = window.innerWidth
         vm.halfHeight = vm.winHeight / 2
         vm.halfWidth = vm.winWidth / 2
-      }, 10)
+      }, 100)
       // *** ranks
       firebase.database().ref('avatars/' + myId).remove()
       vm.addAvatar(vm.myAvatar)
@@ -320,6 +332,14 @@ export default {
       let result = Avatars.push(newAvatar)
       this.myAvatar.id = result.key
       myId = this.myAvatar.id
+      if (vm.myAvatar.color === '#F5FF5D') {
+        vm.target = '#AEFBE9'
+      } else if (vm.myAvatar.color === '#AEFBE9') {
+        vm.target = '#FC665A'
+      } else {
+        vm.target = '#F5FF5D'
+      }
+      console.log(vm.myAvatar.color)
     },
     move (time) {
       // console.log(this.winHeight)
@@ -337,8 +357,9 @@ export default {
       var err = 0
       let i = 1
       var e2 = 0
-
+      clearInterval(vm.active)
       vm.active = setInterval(function () {
+        console.log(vm.target)
         if (i === 10) {
           x1 = vm.mouseX
           y1 = vm.mouseY
@@ -388,9 +409,10 @@ export default {
     },
     checkEat () {
       var vm = this
-      var eatFood = 0
       var index = 0
       var check = 0
+      // *chekeat food
+      var eatFood = 0
       eatFood = vm.foods.find(food => {
         index++
         check = ((food.x < vm.myAvatar.x + 25) && (food.x > vm.myAvatar.x - 25)) && ((food.y < vm.myAvatar.y + 25) && (food.y > vm.myAvatar.y - 25))
@@ -399,11 +421,27 @@ export default {
       vm.foods.splice(index, 1)
       if (eatFood !== undefined) {
         firebase.database().ref('foods/' + eatFood.id).remove()
-        vm.myAvatar.score -= 20
+        if (vm.myAvatar.score < 10) {
+          vm.myAvatar.score = -1
+        }
+        vm.myAvatar.score /= 2
+        vm.myAvatar.color = eatFood.color
+
+        if (vm.myAvatar.color === '#F5FF5D') {
+          vm.target = '#AEFBE9'
+        } else if (vm.myAvatar.color === '#AEFBE9') {
+          vm.target = '#FC665A'
+        } else {
+          vm.target = '#F5FF5D'
+        }
+
+        console.log(eatFood.color)
         firebase.database().ref('avatars/' + vm.myAvatar.id).update({
+          color: vm.myAvatar.color,
           score: vm.myAvatar.score
         })
       }
+      // *chekeat chick
       var eatChick = 0
       index = 0
       check = 0
@@ -413,11 +451,31 @@ export default {
         return (check)
       })
       if (eatChick !== undefined) {
-        firebase.database().ref('avatars/' + eatChick.id).remove()
-        vm.myAvatar.score += 10
-        firebase.database().ref('avatars/' + vm.myAvatar.id).update({
-          score: vm.myAvatar.score
-        })
+        if (vm.myAvatar.color === '#F5FF5D') {
+          if (eatChick.color === '#AEFBE9') {
+            firebase.database().ref('avatars/' + eatChick.id).remove()
+            vm.myAvatar.score += 20
+            firebase.database().ref('avatars/' + vm.myAvatar.id).update({
+              score: vm.myAvatar.score
+            })
+          }
+        } else if (vm.myAvatar.color === '#AEFBE9') {
+          if (eatChick.color === '#FC665A') {
+            firebase.database().ref('avatars/' + eatChick.id).remove()
+            vm.myAvatar.score += 20
+            firebase.database().ref('avatars/' + vm.myAvatar.id).update({
+              score: vm.myAvatar.score
+            })
+          }
+        } else {
+          if (eatChick.color === '#F5FF5D') {
+            firebase.database().ref('avatars/' + eatChick.id).remove()
+            vm.myAvatar.score += 20
+            firebase.database().ref('avatars/' + vm.myAvatar.id).update({
+              score: vm.myAvatar.score
+            })
+          }
+        }
       }
       if (vm.myAvatar.score < 0) {
         clearInterval(vm.active)
@@ -480,10 +538,19 @@ export default {
       var newfood
       var vm = this
       var length = 0
-
+      var genfood = Math.floor(Math.random() * 3) + 1
+      var color = ''
+      if (genfood === 1) {
+        color = '#F5FF5D'
+      } else if (genfood === 2) {
+        color = '#AEFBE9'
+      } else {
+        color = '#FC665A'
+      }
       newfood = {
-        color: Math.floor(Math.random() * 3) + 1,
-        x: Math.floor(Math.random() * 2900) + 50,
+        pic: genfood,
+        color,
+        x: Math.floor(Math.random() * 2800) + 50,
         y: Math.floor(Math.random() * 2778) + 50
       }
       vm.addfood(newfood)
@@ -491,7 +558,7 @@ export default {
         if (length < 10) {
           newfood = {
             color: Math.floor(Math.random() * 3) + 1,
-            x: Math.floor(Math.random() * 2900) + 50,
+            x: Math.floor(Math.random() * 2800) + 50,
             y: Math.floor(Math.random() * 2778) + 50
           }
           vm.addfood(newfood)
